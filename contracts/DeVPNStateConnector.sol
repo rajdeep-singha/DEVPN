@@ -123,7 +123,7 @@ contract DeVPNStateConnector {
         stateConnector = IStateConnector(_stateConnector);
         nodeRegistry = IDeVPNNodeRegistry(_nodeRegistry);
         
-        // In production, initialize with actual FTSO providers
+        // have to initialize with actual FTSO providers in production
         authorizedProviders[msg.sender] = true;
     }
     
@@ -133,7 +133,7 @@ contract DeVPNStateConnector {
         bytes32 _nodeId,
         string memory _endpoint
     ) external returns (bytes32) {
-        // Verify node exists
+        // node verification
         (address owner,,,,,,,,,,,,) = nodeRegistry.getNodeInfo(_nodeId);
         require(owner != address(0), "Node does not exist");
         
@@ -249,11 +249,11 @@ contract DeVPNStateConnector {
             "Too soon to update"
         );
         
-        // Calculate uptime percentage
+        
         uint256 uptimeScore = (record.successfulChecks * 100) / record.totalChecks;
         record.currentScore = uptimeScore;
         
-        // Submit to node registry
+        
         nodeRegistry.submitHeartbeat(_nodeId, uptimeScore);
         
         emit UptimeUpdated(
@@ -263,7 +263,6 @@ contract DeVPNStateConnector {
             record.totalChecks
         );
         
-        // Reset if window exceeded 
         if (block.timestamp >= record.lastCheckTime + UPTIME_CHECK_WINDOW) {
             record.totalChecks = 0;
             record.successfulChecks = 0;
@@ -282,8 +281,6 @@ contract DeVPNStateConnector {
     
     // View Functions 
     
-   
-   // Get attestation details
 
     function getAttestation(bytes32 _attestationHash) 
         external 
@@ -315,7 +312,7 @@ contract DeVPNStateConnector {
     }
     
     
-    // Calculate current uptime score
+    // Calculating current uptime score
     function calculateUptimeScore(bytes32 _nodeId) 
         external 
         view 
@@ -330,7 +327,7 @@ contract DeVPNStateConnector {
         return (record.successfulChecks * 100) / record.totalChecks;
     }
     
-    // Check if node meets minimum uptime requirements
+    // Checking if node meets minimum uptime requirements
     function meetsUptimeRequirement(bytes32 _nodeId) 
         external 
         view 
@@ -356,9 +353,9 @@ contract DeVPNStateConnector {
             record.successfulChecks++;
         }
         
-        // Keep rolling window
+   
         if (record.totalChecks > 100) {
-            // Maintain approximately last 100 checks
+           
             record.totalChecks = 100;
             if (_isOnline) {
                 record.successfulChecks = 
