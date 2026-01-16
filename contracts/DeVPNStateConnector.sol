@@ -3,8 +3,7 @@ pragma solidity ^0.8.33;
 
 
 //  DeVPN State Connector Integration
-//  Uses Flare's State Connector to verify off-chain node uptime and heartbeats
- //  This contract validates node availability through decentralized attestation
+
 
 
 interface IStateConnector {
