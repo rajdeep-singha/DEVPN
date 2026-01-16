@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.33;
 
-
 //  DeVPN State Connector Integration
-
-
-
 interface IStateConnector {
    
     function requestAttestation(bytes calldata data) external;
