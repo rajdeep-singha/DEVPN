@@ -1,0 +1,17 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.1",
+    "@nomicfoundation/hardhat-viem": "^3.0.1",
+    "@types/node": "^25.0.9",
+    "hardhat": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "viem": "^2.44.4"
+  },
+  "dependencies": {
+    "@flarenetwork/flare-periphery-contracts": "^0.1.39"
+  }
+}
