@@ -9,7 +9,6 @@ import "./DeVPNnoderegistery.sol";
  * @dev Handles deposits, settlements, refunds, and disputes
  */
 contract DeVPNEscrow {
-
     // ============ State Variables ============
     DeVPNNodeRegistry public nodeRegistry;
     address public owner;
@@ -65,35 +64,17 @@ contract DeVPNEscrow {
         string userPublicKey
     );
 
-    event SessionEnded(
-        uint256 indexed sessionId,
-        uint256 endTime,
-        uint256 bytesUsed
-    );
+    event SessionEnded(uint256 indexed sessionId, uint256 endTime, uint256 bytesUsed);
 
     event SessionSettled(
-        uint256 indexed sessionId,
-        uint256 nodePayout,
-        uint256 userRefund,
-        uint256 protocolFee
+        uint256 indexed sessionId, uint256 nodePayout, uint256 userRefund, uint256 protocolFee
     );
 
-    event SessionDisputed(
-        uint256 indexed sessionId,
-        address indexed disputer,
-        string reason
-    );
+    event SessionDisputed(uint256 indexed sessionId, address indexed disputer, string reason);
 
-    event DisputeResolved(
-        uint256 indexed sessionId,
-        bool inFavorOfUser,
-        uint256 refundAmount
-    );
+    event DisputeResolved(uint256 indexed sessionId, bool inFavorOfUser, uint256 refundAmount);
 
-    event SessionExpired(
-        uint256 indexed sessionId,
-        uint256 refundAmount
-    );
+    event SessionExpired(uint256 indexed sessionId, uint256 refundAmount);
 
     event ProtocolFeesWithdrawn(address indexed recipient, uint256 amount);
     event StateConnectorUpdated(address indexed newConnector);
@@ -138,7 +119,7 @@ contract DeVPNEscrow {
         uint256 amount = totalProtocolFees;
         require(amount > 0, "No fees to withdraw");
         totalProtocolFees = 0;
-        (bool success, ) = payable(owner).call{value: amount}("");
+        (bool success,) = payable(owner).call{ value: amount }("");
         require(success, "Transfer failed");
         emit ProtocolFeesWithdrawn(owner, amount);
     }
@@ -232,7 +213,8 @@ contract DeVPNEscrow {
             nodeActiveSessionCount[session.nodeId]--;
         }
 
-        uint256 bytesUsed = _actualBytesUsed > session.bytesUsed ? _actualBytesUsed : session.bytesUsed;
+        uint256 bytesUsed =
+            _actualBytesUsed > session.bytesUsed ? _actualBytesUsed : session.bytesUsed;
         session.bytesUsed = bytesUsed;
 
         uint256 cost = nodeRegistry.calculateCostInFlr(session.nodeId, bytesUsed);
@@ -241,7 +223,7 @@ contract DeVPNEscrow {
         }
         session.costInFlr = cost;
 
-        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10000;
+        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10_000;
         uint256 nodePayout = cost - protocolFee;
         uint256 userRefund = session.deposit - cost;
 
@@ -250,12 +232,12 @@ contract DeVPNEscrow {
         totalVolumeProcessed += cost;
 
         if (nodePayout > 0) {
-            nodeRegistry.addEarnings{value: nodePayout}(session.nodeId, nodePayout);
+            nodeRegistry.addEarnings{ value: nodePayout }(session.nodeId, nodePayout);
         }
         nodeRegistry.recordBandwidthUsage(session.nodeId, bytesUsed);
 
         if (userRefund > 0) {
-            (bool success, ) = payable(session.user).call{value: userRefund}("");
+            (bool success,) = payable(session.user).call{ value: userRefund }("");
             require(success, "Refund failed");
         }
 
@@ -278,7 +260,7 @@ contract DeVPNEscrow {
         session.status = SessionStatus.Expired;
         session.endTime = block.timestamp;
 
-        (bool success, ) = payable(session.user).call{value: session.deposit}("");
+        (bool success,) = payable(session.user).call{ value: session.deposit }("");
         require(success, "Refund failed");
 
         emit SessionExpired(_sessionId, session.deposit);
@@ -300,7 +282,7 @@ contract DeVPNEscrow {
         if (cost > session.deposit) cost = session.deposit;
         session.costInFlr = cost;
 
-        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10000;
+        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10_000;
         uint256 nodePayout = cost - protocolFee;
         uint256 userRefund = session.deposit - cost;
 
@@ -309,12 +291,12 @@ contract DeVPNEscrow {
         totalVolumeProcessed += cost;
 
         if (nodePayout > 0) {
-            nodeRegistry.addEarnings{value: nodePayout}(session.nodeId, nodePayout);
+            nodeRegistry.addEarnings{ value: nodePayout }(session.nodeId, nodePayout);
         }
         nodeRegistry.recordBandwidthUsage(session.nodeId, session.bytesUsed);
 
         if (userRefund > 0) {
-            (bool success, ) = payable(session.user).call{value: userRefund}("");
+            (bool success,) = payable(session.user).call{ value: userRefund }("");
             require(success, "Refund failed");
         }
 
@@ -355,7 +337,7 @@ contract DeVPNEscrow {
 
         if (_inFavorOfUser) {
             session.status = SessionStatus.Refunded;
-            (bool success, ) = payable(session.user).call{value: session.deposit}("");
+            (bool success,) = payable(session.user).call{ value: session.deposit }("");
             require(success, "Refund failed");
             nodeRegistry.slashNode(session.nodeId, "Dispute lost");
             emit DisputeResolved(_sessionId, true, session.deposit);
@@ -364,7 +346,7 @@ contract DeVPNEscrow {
             if (cost > session.deposit) cost = session.deposit;
             session.costInFlr = cost;
 
-            uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10000;
+            uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10_000;
             uint256 nodePayout = cost - protocolFee;
             uint256 userRefund = session.deposit - cost;
 
@@ -372,12 +354,12 @@ contract DeVPNEscrow {
             totalProtocolFees += protocolFee;
 
             if (nodePayout > 0) {
-                nodeRegistry.addEarnings{value: nodePayout}(session.nodeId, nodePayout);
+                nodeRegistry.addEarnings{ value: nodePayout }(session.nodeId, nodePayout);
             }
             nodeRegistry.recordBandwidthUsage(session.nodeId, _bytesUsed);
 
             if (userRefund > 0) {
-                (bool success, ) = payable(session.user).call{value: userRefund}("");
+                (bool success,) = payable(session.user).call{ value: userRefund }("");
                 require(success, "Refund failed");
             }
 
@@ -441,7 +423,8 @@ contract DeVPNEscrow {
     function getActiveSession(address _user) external view returns (Session memory) {
         uint256 id = activeSessionId[_user];
         if (id == 0) {
-            return Session(0, bytes32(0), address(0), "", 0, 0, 0, 0, 0, SessionStatus.Active, false);
+            return
+                Session(0, bytes32(0), address(0), "", 0, 0, 0, 0, 0, SessionStatus.Active, false);
         }
         return sessions[id];
     }
@@ -461,7 +444,7 @@ contract DeVPNEscrow {
         returns (uint256 cost, uint256 fee, uint256 payout)
     {
         cost = nodeRegistry.calculateCostInFlr(_nodeId, _bytes);
-        fee = (cost * PROTOCOL_FEE_BPS) / 10000;
+        fee = (cost * PROTOCOL_FEE_BPS) / 10_000;
         payout = cost - fee;
     }
 

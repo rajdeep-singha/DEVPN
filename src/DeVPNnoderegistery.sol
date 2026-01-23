@@ -9,7 +9,6 @@ import "./interfaces/IFlare.sol";
  * @dev Uses Flare FTSO for FLR/USD price feeds
  */
 contract DeVPNNodeRegistry {
-
     // ============ Flare Integration ============
     FtsoV2Interface public ftsoV2;
     bytes21 public constant FLR_USD_FEED_ID = 0x01464c522f55534400000000000000000000000000;
@@ -33,30 +32,30 @@ contract DeVPNNodeRegistry {
     struct NodeInfo {
         uint256 id;
         address owner;
-        string endpoint;           // IP:Port or domain
-        string publicKey;          // WireGuard public key
+        string endpoint; // IP:Port or domain
+        string publicKey; // WireGuard public key
         uint256 stakedAmount;
         uint256 stakeTimestamp;
-        uint256 bandwidthPrice;    // Price per GB in USD cents (e.g., 50 = $0.50/GB)
-        string location;           // ISO country code
-        uint256 maxBandwidth;      // Max bandwidth in Mbps
+        uint256 bandwidthPrice; // Price per GB in USD cents (e.g., 50 = $0.50/GB)
+        string location; // ISO country code
+        uint256 maxBandwidth; // Max bandwidth in Mbps
         NodeStatus status;
         uint256 totalBandwidthServed; // Total bytes served
         uint256 totalEarnings;
         uint256 lastHeartbeat;
-        uint256 uptimeScore;       // Percentage (0-100)
+        uint256 uptimeScore; // Percentage (0-100)
         uint256 sessionCount;
-        uint256 rating;            // 0-500 (0-5 stars * 100)
+        uint256 rating; // 0-500 (0-5 stars * 100)
         uint256 ratingCount;
         bool isActive;
     }
 
     enum NodeStatus {
-        Pending,      // Awaiting activation
-        Active,       // Online and serving
-        Suspended,    // Temporarily suspended
-        Unstaking,    // In unstaking period
-        Slashed       // Penalized
+        Pending, // Awaiting activation
+        Active, // Online and serving
+        Suspended, // Temporarily suspended
+        Unstaking, // In unstaking period
+        Slashed // Penalized
     }
 
     // ============ Mappings ============
@@ -76,64 +75,26 @@ contract DeVPNNodeRegistry {
     );
 
     event NodeUpdated(
-        bytes32 indexed nodeId,
-        string endpoint,
-        uint256 bandwidthPrice,
-        uint256 maxBandwidth
+        bytes32 indexed nodeId, string endpoint, uint256 bandwidthPrice, uint256 maxBandwidth
     );
 
-    event NodeStatusChanged(
-        bytes32 indexed nodeId,
-        NodeStatus oldStatus,
-        NodeStatus newStatus
-    );
+    event NodeStatusChanged(bytes32 indexed nodeId, NodeStatus oldStatus, NodeStatus newStatus);
 
-    event StakeIncreased(
-        bytes32 indexed nodeId,
-        uint256 additionalAmount,
-        uint256 totalStake
-    );
+    event StakeIncreased(bytes32 indexed nodeId, uint256 additionalAmount, uint256 totalStake);
 
-    event UnstakeInitiated(
-        bytes32 indexed nodeId,
-        uint256 amount,
-        uint256 unlockTime
-    );
+    event UnstakeInitiated(bytes32 indexed nodeId, uint256 amount, uint256 unlockTime);
 
-    event StakeWithdrawn(
-        bytes32 indexed nodeId,
-        address indexed owner,
-        uint256 amount
-    );
+    event StakeWithdrawn(bytes32 indexed nodeId, address indexed owner, uint256 amount);
 
-    event HeartbeatReceived(
-        bytes32 indexed nodeId,
-        uint256 timestamp,
-        uint256 uptimeScore
-    );
+    event HeartbeatReceived(bytes32 indexed nodeId, uint256 timestamp, uint256 uptimeScore);
 
-    event NodeSlashed(
-        bytes32 indexed nodeId,
-        uint256 slashedAmount,
-        string reason
-    );
+    event NodeSlashed(bytes32 indexed nodeId, uint256 slashedAmount, string reason);
 
-    event NodeRated(
-        bytes32 indexed nodeId,
-        address indexed user,
-        uint256 rating
-    );
+    event NodeRated(bytes32 indexed nodeId, address indexed user, uint256 rating);
 
-    event EarningsAdded(
-        bytes32 indexed nodeId,
-        uint256 amount
-    );
+    event EarningsAdded(bytes32 indexed nodeId, uint256 amount);
 
-    event EarningsWithdrawn(
-        bytes32 indexed nodeId,
-        address indexed owner,
-        uint256 amount
-    );
+    event EarningsWithdrawn(bytes32 indexed nodeId, address indexed owner, uint256 amount);
 
     event EscrowContractUpdated(address indexed newEscrow);
 
@@ -159,10 +120,7 @@ contract DeVPNNodeRegistry {
     }
 
     modifier onlyOwnerOrEscrow() {
-        require(
-            msg.sender == owner || msg.sender == escrowContract,
-            "Not authorized"
-        );
+        require(msg.sender == owner || msg.sender == escrowContract, "Not authorized");
         _;
     }
 
@@ -220,9 +178,8 @@ contract DeVPNNodeRegistry {
         nodeCounter++;
 
         // Generate unique node ID
-        bytes32 nodeId = keccak256(
-            abi.encodePacked(msg.sender, block.timestamp, nodeCounter, _publicKey)
-        );
+        bytes32 nodeId =
+            keccak256(abi.encodePacked(msg.sender, block.timestamp, nodeCounter, _publicKey));
 
         require(nodes[nodeId].owner == address(0), "Node ID collision");
 
@@ -257,14 +214,7 @@ contract DeVPNNodeRegistry {
         allNodeIds.push(nodeId);
         totalNodes++;
 
-        emit NodeRegistered(
-            nodeId,
-            msg.sender,
-            _endpoint,
-            _publicKey,
-            msg.value,
-            _location
-        );
+        emit NodeRegistered(nodeId, msg.sender, _endpoint, _publicKey, msg.value, _location);
 
         return nodeId;
     }
@@ -331,11 +281,7 @@ contract DeVPNNodeRegistry {
      * @notice Initiate unstaking process
      * @param _nodeId Node identifier
      */
-    function initiateUnstake(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function initiateUnstake(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         require(node.status != NodeStatus.Unstaking, "Already unstaking");
@@ -351,36 +297,25 @@ contract DeVPNNodeRegistry {
         }
 
         emit NodeStatusChanged(_nodeId, oldStatus, NodeStatus.Unstaking);
-        emit UnstakeInitiated(
-            _nodeId,
-            node.stakedAmount,
-            block.timestamp + STAKE_LOCK_PERIOD
-        );
+        emit UnstakeInitiated(_nodeId, node.stakedAmount, block.timestamp + STAKE_LOCK_PERIOD);
     }
 
     /**
      * @notice Withdraw stake after lock period
      * @param _nodeId Node identifier
      */
-    function withdrawStake(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function withdrawStake(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         require(node.status == NodeStatus.Unstaking, "Not in unstaking status");
-        require(
-            block.timestamp >= node.stakeTimestamp + STAKE_LOCK_PERIOD,
-            "Lock period not ended"
-        );
+        require(block.timestamp >= node.stakeTimestamp + STAKE_LOCK_PERIOD, "Lock period not ended");
 
         uint256 amount = node.stakedAmount;
         require(amount > 0, "No stake to withdraw");
 
         node.stakedAmount = 0;
 
-        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        (bool success,) = payable(msg.sender).call{ value: amount }("");
         require(success, "Transfer failed");
 
         emit StakeWithdrawn(_nodeId, msg.sender, amount);
@@ -390,11 +325,7 @@ contract DeVPNNodeRegistry {
      * @notice Withdraw accumulated earnings
      * @param _nodeId Node identifier
      */
-    function withdrawEarnings(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function withdrawEarnings(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         uint256 earnings = node.totalEarnings;
@@ -402,7 +333,7 @@ contract DeVPNNodeRegistry {
 
         node.totalEarnings = 0;
 
-        (bool success, ) = payable(msg.sender).call{value: earnings}("");
+        (bool success,) = payable(msg.sender).call{ value: earnings }("");
         require(success, "Transfer failed");
 
         emit EarningsWithdrawn(_nodeId, msg.sender, earnings);
@@ -414,11 +345,7 @@ contract DeVPNNodeRegistry {
      * @notice Activate a pending node (self-activation after registration)
      * @param _nodeId Node identifier
      */
-    function activateNode(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function activateNode(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         require(
@@ -443,11 +370,7 @@ contract DeVPNNodeRegistry {
      * @notice Deactivate a node (go offline)
      * @param _nodeId Node identifier
      */
-    function deactivateNode(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function deactivateNode(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         require(node.status == NodeStatus.Active, "Node not active");
@@ -464,11 +387,7 @@ contract DeVPNNodeRegistry {
      * @notice Submit heartbeat to prove node is online
      * @param _nodeId Node identifier
      */
-    function submitHeartbeat(bytes32 _nodeId)
-        external
-        onlyNodeOwner(_nodeId)
-        nodeExists(_nodeId)
-    {
+    function submitHeartbeat(bytes32 _nodeId) external onlyNodeOwner(_nodeId) nodeExists(_nodeId) {
         NodeInfo storage node = nodes[_nodeId];
 
         require(node.status == NodeStatus.Active, "Node not active");
@@ -586,7 +505,7 @@ contract DeVPNNodeRegistry {
         }
 
         // Slashed funds go to contract owner (treasury)
-        (bool success, ) = payable(owner).call{value: slashAmount}("");
+        (bool success,) = payable(owner).call{ value: slashAmount }("");
         require(success, "Slash transfer failed");
 
         emit NodeSlashed(_nodeId, slashAmount, _reason);
@@ -601,11 +520,7 @@ contract DeVPNNodeRegistry {
      * @return decimals Decimal places
      * @return timestamp Last update time
      */
-    function getFlrUsdPrice()
-        public
-        view
-        returns (uint256 price, int8 decimals, uint64 timestamp)
-    {
+    function getFlrUsdPrice() public view returns (uint256 price, int8 decimals, uint64 timestamp) {
         return ftsoV2.getFeedById(FLR_USD_FEED_ID);
     }
 
@@ -627,7 +542,7 @@ contract DeVPNNodeRegistry {
         uint256 gigabytes = (_bytes * 1e18) / (1024 * 1024 * 1024);
 
         // Get current FLR/USD price
-        (uint256 flrPrice, int8 decimals, ) = getFlrUsdPrice();
+        (uint256 flrPrice, int8 decimals,) = getFlrUsdPrice();
 
         if (flrPrice == 0) {
             // Fallback if FTSO unavailable: assume $0.02 per FLR
@@ -673,11 +588,7 @@ contract DeVPNNodeRegistry {
      * @param _owner Owner address
      * @return Array of node IDs
      */
-    function getNodesByOwner(address _owner)
-        external
-        view
-        returns (bytes32[] memory)
-    {
+    function getNodesByOwner(address _owner) external view returns (bytes32[] memory) {
         return ownerNodes[_owner];
     }
 
@@ -731,8 +642,8 @@ contract DeVPNNodeRegistry {
 
         for (uint256 i = 0; i < allNodeIds.length; i++) {
             if (
-                keccak256(bytes(nodes[allNodeIds[i]].location)) == keccak256(bytes(_location)) &&
-                nodes[allNodeIds[i]].isActive
+                keccak256(bytes(nodes[allNodeIds[i]].location)) == keccak256(bytes(_location))
+                    && nodes[allNodeIds[i]].isActive
             ) {
                 count++;
             }
@@ -743,8 +654,8 @@ contract DeVPNNodeRegistry {
 
         for (uint256 i = 0; i < allNodeIds.length; i++) {
             if (
-                keccak256(bytes(nodes[allNodeIds[i]].location)) == keccak256(bytes(_location)) &&
-                nodes[allNodeIds[i]].isActive
+                keccak256(bytes(nodes[allNodeIds[i]].location)) == keccak256(bytes(_location))
+                    && nodes[allNodeIds[i]].isActive
             ) {
                 locationNodes[index] = allNodeIds[i];
                 index++;
@@ -787,20 +698,12 @@ contract DeVPNNodeRegistry {
      * @param _nodeId Node identifier
      * @return isHealthy True if node is healthy
      */
-    function isNodeHealthy(bytes32 _nodeId)
-        external
-        view
-        nodeExists(_nodeId)
-        returns (bool)
-    {
+    function isNodeHealthy(bytes32 _nodeId) external view nodeExists(_nodeId) returns (bool) {
         NodeInfo storage node = nodes[_nodeId];
 
-        return (
-            node.isActive &&
-            node.status == NodeStatus.Active &&
-            node.uptimeScore >= UPTIME_THRESHOLD &&
-            block.timestamp - node.lastHeartbeat <= HEARTBEAT_INTERVAL * 3
-        );
+        return (node.isActive && node.status == NodeStatus.Active
+                && node.uptimeScore >= UPTIME_THRESHOLD
+                && block.timestamp - node.lastHeartbeat <= HEARTBEAT_INTERVAL * 3);
     }
 
     // ============ Receive Function ============

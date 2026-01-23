@@ -21,10 +21,8 @@ contract DeployDeVPN is Script {
         console.log("DeVPNEscrow deployed at:", address(escrow));
 
         // 3. Deploy StateConnector with both addresses
-        DeVPNStateConnector stateConnector = new DeVPNStateConnector(
-            address(nodeRegistry),
-            address(escrow)
-        );
+        DeVPNStateConnector stateConnector =
+            new DeVPNStateConnector(address(nodeRegistry), address(escrow));
         console.log("DeVPNStateConnector deployed at:", address(stateConnector));
 
         // 4. Link contracts together

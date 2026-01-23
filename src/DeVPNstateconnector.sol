@@ -12,7 +12,6 @@ import "./DeVPNnoderegistery.sol";
  * @dev Uses Flare's decentralized attestation system to verify off-chain data
  */
 contract DeVPNStateConnector {
-
     // ============ Flare Integration ============
     IFdcVerification public fdcVerification;
     IJsonApi public jsonApi;
@@ -62,29 +61,16 @@ contract DeVPNStateConnector {
     );
 
     event BandwidthProofVerified(
-        bytes32 indexed proofId,
-        uint256 sessionId,
-        uint256 bytesUsed,
-        uint256 attestations
+        bytes32 indexed proofId, uint256 sessionId, uint256 bytesUsed, uint256 attestations
     );
 
     event HeartbeatProofSubmitted(
-        bytes32 indexed proofId,
-        bytes32 indexed nodeId,
-        bool isOnline,
-        uint256 latency
+        bytes32 indexed proofId, bytes32 indexed nodeId, bool isOnline, uint256 latency
     );
 
-    event HeartbeatProofVerified(
-        bytes32 indexed proofId,
-        bytes32 nodeId,
-        bool isOnline
-    );
+    event HeartbeatProofVerified(bytes32 indexed proofId, bytes32 nodeId, bool isOnline);
 
-    event ProofAttested(
-        bytes32 indexed proofId,
-        address indexed attestor
-    );
+    event ProofAttested(bytes32 indexed proofId, address indexed attestor);
 
     event AttestorAdded(address indexed attestor);
     event AttestorRemoved(address indexed attestor);
@@ -154,11 +140,10 @@ contract DeVPNStateConnector {
      * @param _bytesUsed Bytes used in session
      * @param _signature Signature from node (optional, for extra verification)
      */
-    function submitBandwidthProof(
-        uint256 _sessionId,
-        uint256 _bytesUsed,
-        bytes calldata _signature
-    ) external returns (bytes32) {
+    function submitBandwidthProof(uint256 _sessionId, uint256 _bytesUsed, bytes calldata _signature)
+        external
+        returns (bytes32)
+    {
         // Get session info
         DeVPNEscrow.Session memory session = escrow.getSession(_sessionId);
         require(session.id != 0, "Session not found");
@@ -168,16 +153,14 @@ contract DeVPNStateConnector {
         require(node.owner == msg.sender, "Not node owner");
 
         // Generate proof ID
-        bytes32 proofId = keccak256(
-            abi.encodePacked(_sessionId, session.nodeId, _bytesUsed, block.timestamp)
-        );
+        bytes32 proofId =
+            keccak256(abi.encodePacked(_sessionId, session.nodeId, _bytesUsed, block.timestamp));
 
         require(bandwidthProofs[proofId].timestamp == 0, "Proof already exists");
 
         // Create proof hash including signature
-        bytes32 proofHash = keccak256(
-            abi.encodePacked(_sessionId, session.nodeId, _bytesUsed, _signature)
-        );
+        bytes32 proofHash =
+            keccak256(abi.encodePacked(_sessionId, session.nodeId, _bytesUsed, _signature));
 
         bandwidthProofs[proofId] = BandwidthProof({
             sessionId: _sessionId,
@@ -215,10 +198,7 @@ contract DeVPNStateConnector {
         if (proof.attestationCount >= MIN_ATTESTATIONS) {
             proof.verified = true;
             emit BandwidthProofVerified(
-                _proofId,
-                proof.sessionId,
-                proof.bytesUsed,
-                proof.attestationCount
+                _proofId, proof.sessionId, proof.bytesUsed, proof.attestationCount
             );
         }
     }
@@ -228,10 +208,7 @@ contract DeVPNStateConnector {
      * @param _proofId Proof ID
      * @param _fdcProof FDC proof data
      */
-    function verifyWithFdc(
-        bytes32 _proofId,
-        IFdcVerification.Proof calldata _fdcProof
-    ) external {
+    function verifyWithFdc(bytes32 _proofId, IFdcVerification.Proof calldata _fdcProof) external {
         BandwidthProof storage proof = bandwidthProofs[_proofId];
         require(proof.timestamp != 0, "Proof not found");
         require(!proof.verified, "Already verified");
@@ -250,10 +227,7 @@ contract DeVPNStateConnector {
         proof.attestationCount = MIN_ATTESTATIONS; // FDC counts as full attestation
 
         emit BandwidthProofVerified(
-            _proofId,
-            proof.sessionId,
-            proof.bytesUsed,
-            proof.attestationCount
+            _proofId, proof.sessionId, proof.bytesUsed, proof.attestationCount
         );
     }
 
@@ -286,22 +260,17 @@ contract DeVPNStateConnector {
      * @param _isOnline Whether node is online
      * @param _latency Measured latency in ms
      */
-    function submitHeartbeatProof(
-        bytes32 _nodeId,
-        bool _isOnline,
-        uint256 _latency
-    ) external returns (bytes32) {
+    function submitHeartbeatProof(bytes32 _nodeId, bool _isOnline, uint256 _latency)
+        external
+        returns (bytes32)
+    {
         // Verify node exists
         DeVPNNodeRegistry.NodeInfo memory node = nodeRegistry.getNodeInfo(_nodeId);
         require(node.owner != address(0), "Node not found");
 
-        bytes32 proofId = keccak256(
-            abi.encodePacked(_nodeId, block.timestamp, _isOnline, _latency)
-        );
+        bytes32 proofId = keccak256(abi.encodePacked(_nodeId, block.timestamp, _isOnline, _latency));
 
-        bytes32 proofHash = keccak256(
-            abi.encodePacked(_nodeId, _isOnline, _latency, msg.sender)
-        );
+        bytes32 proofHash = keccak256(abi.encodePacked(_nodeId, _isOnline, _latency, msg.sender));
 
         heartbeatProofs[proofId] = NodeHeartbeatProof({
             nodeId: _nodeId,
@@ -326,8 +295,7 @@ contract DeVPNStateConnector {
         require(proof.timestamp != 0, "Proof not found");
         require(!proof.verified, "Already verified");
         require(
-            block.timestamp <= proof.timestamp + VERIFICATION_WINDOW,
-            "Verification window expired"
+            block.timestamp <= proof.timestamp + VERIFICATION_WINDOW, "Verification window expired"
         );
 
         proof.verified = true;
@@ -345,10 +313,10 @@ contract DeVPNStateConnector {
      * @param _sessionId Session to verify
      * @param _apiUrl API endpoint URL
      */
-    function requestBandwidthVerification(
-        uint256 _sessionId,
-        string calldata _apiUrl
-    ) external returns (bytes32) {
+    function requestBandwidthVerification(uint256 _sessionId, string calldata _apiUrl)
+        external
+        returns (bytes32)
+    {
         // This would initiate a JSON API request through Flare
         // The response would be verified by the FDC and can be used
         // to attest to bandwidth usage
@@ -357,9 +325,7 @@ contract DeVPNStateConnector {
         require(session.id != 0, "Session not found");
 
         // Generate request ID
-        bytes32 requestId = keccak256(
-            abi.encodePacked(_sessionId, _apiUrl, block.timestamp)
-        );
+        bytes32 requestId = keccak256(abi.encodePacked(_sessionId, _apiUrl, block.timestamp));
 
         // In production, this would call the JSON API contract
         // jsonApi.requestData(_apiUrl, callback);
@@ -369,19 +335,11 @@ contract DeVPNStateConnector {
 
     // ============ View Functions ============
 
-    function getBandwidthProof(bytes32 _proofId)
-        external
-        view
-        returns (BandwidthProof memory)
-    {
+    function getBandwidthProof(bytes32 _proofId) external view returns (BandwidthProof memory) {
         return bandwidthProofs[_proofId];
     }
 
-    function getHeartbeatProof(bytes32 _proofId)
-        external
-        view
-        returns (NodeHeartbeatProof memory)
-    {
+    function getHeartbeatProof(bytes32 _proofId) external view returns (NodeHeartbeatProof memory) {
         return heartbeatProofs[_proofId];
     }
 
@@ -397,15 +355,13 @@ contract DeVPNStateConnector {
      * @notice Get all pending proofs for a node
      * @param _nodeId Node ID
      */
-    function getNodePendingProofs(bytes32 _nodeId)
-        external
-        view
-        returns (bytes32[] memory)
-    {
+    function getNodePendingProofs(bytes32 _nodeId) external view returns (bytes32[] memory) {
         uint256 count = 0;
         for (uint256 i = 0; i < pendingProofs.length; i++) {
-            if (bandwidthProofs[pendingProofs[i]].nodeId == _nodeId &&
-                !bandwidthProofs[pendingProofs[i]].verified) {
+            if (
+                bandwidthProofs[pendingProofs[i]].nodeId == _nodeId
+                    && !bandwidthProofs[pendingProofs[i]].verified
+            ) {
                 count++;
             }
         }
@@ -413,8 +369,10 @@ contract DeVPNStateConnector {
         bytes32[] memory result = new bytes32[](count);
         uint256 index = 0;
         for (uint256 i = 0; i < pendingProofs.length; i++) {
-            if (bandwidthProofs[pendingProofs[i]].nodeId == _nodeId &&
-                !bandwidthProofs[pendingProofs[i]].verified) {
+            if (
+                bandwidthProofs[pendingProofs[i]].nodeId == _nodeId
+                    && !bandwidthProofs[pendingProofs[i]].verified
+            ) {
                 result[index] = pendingProofs[i];
                 index++;
             }

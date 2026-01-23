@@ -48,7 +48,7 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(nodeOperator);
         vm.deal(nodeOperator, 1000 ether);
 
-        nodeId = registry.registerNode{value: 100 ether}(
+        nodeId = registry.registerNode{ value: 100 ether }(
             "192.168.1.1:51820",
             "dGVzdHB1YmtleWZvcm5vZGUxMjM0NTY3ODkwMTIzNA==", // 44 chars
             50, // 50 cents per GB
@@ -75,7 +75,7 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.expectEmit(true, true, true, true);
         emit SessionStarted(1, nodeId, user, deposit, userPubKey);
 
-        uint256 sessionId = escrow.startSession{value: deposit}(nodeId, userPubKey);
+        uint256 sessionId = escrow.startSession{ value: deposit }(nodeId, userPubKey);
 
         assertEq(sessionId, 1);
 
@@ -99,9 +99,8 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(user);
 
         vm.expectRevert("Insufficient deposit");
-        escrow.startSession{value: 0.05 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        escrow.startSession{ value: 0.05 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.stopPrank();
@@ -111,7 +110,7 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(user);
 
         vm.expectRevert("Invalid WireGuard key");
-        escrow.startSession{value: 1 ether}(nodeId, "short");
+        escrow.startSession{ value: 1 ether }(nodeId, "short");
 
         vm.stopPrank();
     }
@@ -120,16 +119,14 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(user);
 
         // Start first session
-        escrow.startSession{value: 1 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        escrow.startSession{ value: 1 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Try to start second session
         vm.expectRevert("Already have active session");
-        escrow.startSession{value: 1 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM1"
+        escrow.startSession{ value: 1 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM1"
         );
 
         vm.stopPrank();
@@ -143,9 +140,8 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(user);
 
         vm.expectRevert("Node not active");
-        escrow.startSession{value: 1 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        escrow.startSession{ value: 1 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.stopPrank();
@@ -156,9 +152,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testEndSessionAndSettle() public {
         // Start session
         vm.startPrank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // User ends and settles
@@ -175,7 +170,7 @@ contract DeVPNEscrowSimpleTest is Test {
         assertTrue(session.settlementTime > 0);
 
         // Check active session cleared
-        (bool hasActive, ) = escrow.hasActiveSession(user);
+        (bool hasActive,) = escrow.hasActiveSession(user);
         assertFalse(hasActive);
 
         // Check user got refund
@@ -188,9 +183,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testEndSessionAndSettleRevertsNotActive() public {
         vm.startPrank(user);
 
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // End once
@@ -206,9 +200,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testEndSessionAndSettleRevertsNotUser() public {
         // User starts session
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Someone else tries to end it
@@ -223,9 +216,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testEndSessionAndSettleRevertsMinimumBytes() public {
         vm.startPrank(user);
 
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Try to settle with less than 1 MB
@@ -239,9 +231,8 @@ contract DeVPNEscrowSimpleTest is Test {
         vm.startPrank(user);
 
         uint256 deposit = 10 ether;
-        uint256 sessionId = escrow.startSession{value: deposit}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: deposit }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         uint256 userBalanceBefore = user.balance;
@@ -255,7 +246,7 @@ contract DeVPNEscrowSimpleTest is Test {
         // Check payments
         DeVPNEscrowSimple.Session memory session = escrow.getSession(sessionId);
         uint256 cost = session.costInFlr;
-        uint256 protocolFee = (cost * 500) / 10000; // 5%
+        uint256 protocolFee = (cost * 500) / 10_000; // 5%
         uint256 nodePayout = cost - protocolFee;
         uint256 expectedRefund = deposit - cost;
 
@@ -263,10 +254,7 @@ contract DeVPNEscrowSimpleTest is Test {
         assertEq(user.balance, userBalanceBefore + expectedRefund);
 
         // Node earnings
-        assertEq(
-            registry.getNodeInfo(nodeId).totalEarnings,
-            nodeEarningsBefore + nodePayout
-        );
+        assertEq(registry.getNodeInfo(nodeId).totalEarnings, nodeEarningsBefore + nodePayout);
 
         // Protocol fees
         assertEq(escrow.totalProtocolFees(), protocolFeesBefore + protocolFee);
@@ -279,9 +267,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testForceSettleSession() public {
         // User starts session
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Fast forward 1 hour
@@ -304,9 +291,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testForceSettleRevertsBeforeDelay() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Try to force settle immediately
@@ -320,9 +306,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testForceSettleRevertsNotNodeOwner() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.warp(block.timestamp + 1 hours);
@@ -340,9 +325,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testExpireSession() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         uint256 userBalanceBefore = user.balance;
@@ -364,9 +348,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testExpireSessionRevertsNotExpired() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.expectRevert("Not expired yet");
@@ -377,9 +360,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testDisputeSession() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // User disputes
@@ -394,9 +376,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testResolveDisputeInFavorOfUser() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.prank(user);
@@ -418,9 +399,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testResolveDisputeInFavorOfNode() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.prank(user);
@@ -440,9 +420,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testCanForceSettle() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Check initially can't force settle
@@ -461,9 +440,8 @@ contract DeVPNEscrowSimpleTest is Test {
 
     function testCanExpire() public {
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 5 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 5 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         // Check initially can't expire
@@ -481,13 +459,14 @@ contract DeVPNEscrowSimpleTest is Test {
     }
 
     function testEstimateSessionCost() public view {
-        (uint256 cost, uint256 fee, uint256 payout) = escrow.estimateSessionCost(
-            nodeId,
-            1 * 1024 * 1024 * 1024 // 1 GB
-        );
+        (uint256 cost, uint256 fee, uint256 payout) =
+            escrow.estimateSessionCost(
+                nodeId,
+                1 * 1024 * 1024 * 1024 // 1 GB
+            );
 
         assertTrue(cost > 0);
-        assertEq(fee, (cost * 500) / 10000); // 5%
+        assertEq(fee, (cost * 500) / 10_000); // 5%
         assertEq(payout, cost - fee);
     }
 
@@ -496,9 +475,8 @@ contract DeVPNEscrowSimpleTest is Test {
     function testWithdrawProtocolFees() public {
         // Create and settle a session to generate fees
         vm.prank(user);
-        uint256 sessionId = escrow.startSession{value: 10 ether}(
-            nodeId,
-            "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
+        uint256 sessionId = escrow.startSession{ value: 10 ether }(
+            nodeId, "dXNlcnB1YmtleWZvcmNsaWVudDEyMzQ1Njc4OTAxMjM0"
         );
 
         vm.prank(user);
