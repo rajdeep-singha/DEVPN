@@ -9,7 +9,6 @@ import "./DeVPNnoderegistery.sol";
  * @dev Eliminates complex multi-step settlement and delays
  */
 contract DeVPNEscrowSimple {
-
     // ============ State Variables ============
     DeVPNNodeRegistry public nodeRegistry;
     address public owner;
@@ -43,10 +42,10 @@ contract DeVPNEscrowSimple {
     }
 
     enum SessionStatus {
-        Active,      // 0 - Session ongoing
-        Settled,     // 1 - Payment processed (FINAL)
-        Disputed,    // 2 - Under dispute
-        Expired      // 3 - Expired and refunded
+        Active, // 0 - Session ongoing
+        Settled, // 1 - Payment processed (FINAL)
+        Disputed, // 2 - Under dispute
+        Expired // 3 - Expired and refunded
     }
 
     // ============ Mappings ============
@@ -74,22 +73,11 @@ contract DeVPNEscrowSimple {
         uint256 protocolFee
     );
 
-    event SessionDisputed(
-        uint256 indexed sessionId,
-        address indexed disputer,
-        string reason
-    );
+    event SessionDisputed(uint256 indexed sessionId, address indexed disputer, string reason);
 
-    event DisputeResolved(
-        uint256 indexed sessionId,
-        bool inFavorOfUser,
-        uint256 refundAmount
-    );
+    event DisputeResolved(uint256 indexed sessionId, bool inFavorOfUser, uint256 refundAmount);
 
-    event SessionExpired(
-        uint256 indexed sessionId,
-        uint256 refundAmount
-    );
+    event SessionExpired(uint256 indexed sessionId, uint256 refundAmount);
 
     event ProtocolFeesWithdrawn(address indexed recipient, uint256 amount);
     event StateConnectorUpdated(address indexed newConnector);
@@ -111,7 +99,8 @@ contract DeVPNEscrowSimple {
     }
 
     modifier onlyNodeOwner(uint256 _sessionId) {
-        DeVPNNodeRegistry.NodeInfo memory node = nodeRegistry.getNodeInfo(sessions[_sessionId].nodeId);
+        DeVPNNodeRegistry.NodeInfo memory node =
+            nodeRegistry.getNodeInfo(sessions[_sessionId].nodeId);
         require(node.owner == msg.sender, "Not node owner");
         _;
     }
@@ -140,7 +129,7 @@ contract DeVPNEscrowSimple {
         uint256 amount = totalProtocolFees;
         require(amount > 0, "No fees to withdraw");
         totalProtocolFees = 0;
-        (bool success, ) = payable(owner).call{value: amount}("");
+        (bool success,) = payable(owner).call{ value: amount }("");
         require(success, "Transfer failed");
         emit ProtocolFeesWithdrawn(owner, amount);
     }
@@ -234,14 +223,12 @@ contract DeVPNEscrowSimple {
         Session storage session = sessions[_sessionId];
         require(session.status == SessionStatus.Active, "Session not active");
         require(
-            block.timestamp >= session.startTime + FORCE_SETTLE_DELAY,
-            "Too early to force settle"
+            block.timestamp >= session.startTime + FORCE_SETTLE_DELAY, "Too early to force settle"
         );
 
         // Use max of user's reported bytes (if any) and node's actual bytes
-        uint256 bytesToCharge = _actualBytesUsed > session.bytesUsed
-            ? _actualBytesUsed
-            : session.bytesUsed;
+        uint256 bytesToCharge =
+            _actualBytesUsed > session.bytesUsed ? _actualBytesUsed : session.bytesUsed;
 
         if (bytesToCharge < MIN_BYTES_CHARGE) {
             bytesToCharge = MIN_BYTES_CHARGE;
@@ -281,7 +268,7 @@ contract DeVPNEscrowSimple {
         session.costInFlr = cost;
 
         // Split payment
-        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10000; // 5%
+        uint256 protocolFee = (cost * PROTOCOL_FEE_BPS) / 10_000; // 5%
         uint256 nodePayout = cost - protocolFee;
         uint256 userRefund = session.deposit - cost;
 
@@ -291,7 +278,7 @@ contract DeVPNEscrowSimple {
 
         // Transfer node payout via NodeRegistry
         if (nodePayout > 0) {
-            nodeRegistry.addEarnings{value: nodePayout}(session.nodeId, nodePayout);
+            nodeRegistry.addEarnings{ value: nodePayout }(session.nodeId, nodePayout);
         }
 
         // Record bandwidth usage
@@ -299,17 +286,12 @@ contract DeVPNEscrowSimple {
 
         // Refund user if any deposit remains
         if (userRefund > 0) {
-            (bool success, ) = payable(session.user).call{value: userRefund}("");
+            (bool success,) = payable(session.user).call{ value: userRefund }("");
             require(success, "Refund failed");
         }
 
         emit SessionSettled(
-            _sessionId,
-            session.settler,
-            _bytes,
-            nodePayout,
-            userRefund,
-            protocolFee
+            _sessionId, session.settler, _bytes, nodePayout, userRefund, protocolFee
         );
     }
 
@@ -320,10 +302,7 @@ contract DeVPNEscrowSimple {
     function expireSession(uint256 _sessionId) external sessionExists(_sessionId) {
         Session storage session = sessions[_sessionId];
         require(session.status == SessionStatus.Active, "Not active");
-        require(
-            block.timestamp >= session.startTime + MAX_SESSION_DURATION,
-            "Not expired yet"
-        );
+        require(block.timestamp >= session.startTime + MAX_SESSION_DURATION, "Not expired yet");
 
         // Mark as expired
         session.status = SessionStatus.Expired;
@@ -336,7 +315,7 @@ contract DeVPNEscrowSimple {
         nodeActiveSessionCount[session.nodeId]--;
 
         // Full refund to user
-        (bool success, ) = payable(session.user).call{value: session.deposit}("");
+        (bool success,) = payable(session.user).call{ value: session.deposit }("");
         require(success, "Refund failed");
 
         emit SessionExpired(_sessionId, session.deposit);
@@ -358,8 +337,7 @@ contract DeVPNEscrowSimple {
         // Can only dispute Active or recently Settled sessions
         if (session.status == SessionStatus.Settled) {
             require(
-                block.timestamp <= session.settlementTime + DISPUTE_WINDOW,
-                "Dispute window closed"
+                block.timestamp <= session.settlementTime + DISPUTE_WINDOW, "Dispute window closed"
             );
         } else {
             require(session.status == SessionStatus.Active, "Cannot dispute");
@@ -367,10 +345,7 @@ contract DeVPNEscrowSimple {
 
         // Only user or node owner can dispute
         DeVPNNodeRegistry.NodeInfo memory node = nodeRegistry.getNodeInfo(session.nodeId);
-        require(
-            msg.sender == session.user || msg.sender == node.owner,
-            "Not authorized"
-        );
+        require(msg.sender == session.user || msg.sender == node.owner, "Not authorized");
         require(!session.disputed, "Already disputed");
 
         session.disputed = true;
@@ -385,11 +360,7 @@ contract DeVPNEscrowSimple {
      * @param _inFavorOfUser True if user wins dispute
      * @param _correctBytesUsed Correct bandwidth usage
      */
-    function resolveDispute(
-        uint256 _sessionId,
-        bool _inFavorOfUser,
-        uint256 _correctBytesUsed
-    )
+    function resolveDispute(uint256 _sessionId, bool _inFavorOfUser, uint256 _correctBytesUsed)
         external
         onlyOwner
         sessionExists(_sessionId)
@@ -404,7 +375,7 @@ contract DeVPNEscrowSimple {
             session.status = SessionStatus.Settled;
             session.settlementTime = block.timestamp;
 
-            (bool success, ) = payable(session.user).call{value: session.deposit}("");
+            (bool success,) = payable(session.user).call{ value: session.deposit }("");
             require(success, "Refund failed");
 
             // Slash the node for misbehavior
@@ -496,7 +467,7 @@ contract DeVPNEscrowSimple {
         returns (uint256 cost, uint256 fee, uint256 payout)
     {
         cost = nodeRegistry.calculateCostInFlr(_nodeId, _bytes);
-        fee = (cost * PROTOCOL_FEE_BPS) / 10000;
+        fee = (cost * PROTOCOL_FEE_BPS) / 10_000;
         payout = cost - fee;
     }
 

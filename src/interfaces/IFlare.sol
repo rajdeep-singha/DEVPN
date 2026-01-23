@@ -6,8 +6,14 @@ pragma solidity ^0.8.19;
  * @notice Interface for Flare FTSO V2 price feeds
  */
 interface FtsoV2Interface {
-    function getFeedById(bytes21 _feedId) external view returns (uint256 value, int8 decimals, uint64 timestamp);
-    function getFeedByIdInWei(bytes21 _feedId) external view returns (uint256 value, uint64 timestamp);
+    function getFeedById(bytes21 _feedId)
+        external
+        view
+        returns (uint256 value, int8 decimals, uint64 timestamp);
+    function getFeedByIdInWei(bytes21 _feedId)
+        external
+        view
+        returns (uint256 value, uint64 timestamp);
 }
 
 /**
