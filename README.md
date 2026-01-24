@@ -1,57 +1,111 @@
-# Sample Hardhat 3 Beta Project (`node:test` and `viem`)
+# DeVPN
 
-This project showcases a Hardhat 3 Beta project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+A decentralized VPN protocol built on Flare Network with WireGuard integration.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## Overview
 
-## Project Overview
+DeVPN enables peer-to-peer VPN connections using smart contracts for payments and node discovery. Node operators stake FLR tokens and earn rewards for providing bandwidth, while users pay per GB consumed.
 
-This example project includes:
+## Architecture
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+### Smart Contracts
 
-## Usage
+- **NodeRegistry**: Manages VPN node registration, staking, and reputation
+- **Escrow**: Handles session payments with atomic settlement
+- **StateConnector** (optional): Cross-chain verification support
 
-### Running Tests
+### Desktop Application
 
-To run all the tests in the project, execute the following command:
+Built with Tauri (Rust + React):
+- WireGuard tunnel management
+- MetaMask/WalletConnect integration
+- Real-time bandwidth tracking
+- Cross-platform (macOS, Linux, Windows)
 
-```shell
-npx hardhat test
+## Features
+
+- **Decentralized**: No central authority controls the network
+- **Pay-per-use**: Only pay for bandwidth consumed
+- **Instant refunds**: Unused deposits returned automatically
+- **Reputation system**: Rate nodes for quality of service
+- **Real-time pricing**: FLR/USD price feeds via Flare FTSO
+
+## Quick Start
+
+### Prerequisites
+
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+- [Node.js](https://nodejs.org/) v18+
+- [Rust](https://rustup.rs/)
+
+### Deploy Contracts
+
+```bash
+cp .env.example .env
+# Add PRIVATE_KEY to .env
+
+forge script script/DeployEscrowSimple.s.sol \
+  --rpc-url https://coston2-api.flare.network/ext/C/rpc \
+  --broadcast \
+  --legacy
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+### Run Client App
 
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
+```bash
+cd app
+npm install
+npm run tauri dev
 ```
 
-### Make a deployment to Sepolia
+## Node Operator Guide
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+1. Register node with minimum stake (10 FLR)
+2. Set bandwidth pricing (FLR per GB)
+3. Configure WireGuard endpoint
+4. Activate node to accept connections
+5. Withdraw earnings anytime
 
-To run the deployment to a local chain:
+## User Guide
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+1. Connect wallet
+2. Browse nodes by location and price
+3. Deposit FLR to start session
+4. Connect VPN and browse securely
+5. Disconnect to settle payment and receive refund
+
+## Network
+
+**Testnet**: Coston2 (Chain ID: 114)
+**RPC**: https://coston2-api.flare.network/ext/C/rpc
+**Explorer**: https://coston2-explorer.flare.network
+**Faucet**: https://faucet.flare.network/coston2
+
+## Development
+
+### Project Structure
+
+```
+├── src/                    # Solidity contracts
+├── script/                 # Deployment scripts
+├── test/                   # Contract tests
+├── app/
+│   ├── src/                # React frontend
+│   └── src-tauri/          # Rust backend
+└── deployed-addresses.json
 ```
 
-To run the deployment to Sepolia,  need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+### Testing
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+```bash
+forge test
+cd app && npm run build
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+## Security
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+This is experimental software. Testnet only. Use at your own risk.
+
+## License
+
+MIT

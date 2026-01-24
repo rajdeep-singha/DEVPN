@@ -1,20 +1,25 @@
-# Node modules
-/node_modules
+# Solidity
+cache/
+out/
+broadcast/*/31337/
+broadcast/**/dry-run/
 
-# Compilation output
-/dist
+# Environment
+.env
+.env.local
 
-# pnpm deploy output
-/bundle
+# Dependencies
+node_modules/
 
-# Hardhat Build Artifacts
-/artifacts
+# Build outputs
+dist/
+build/
 
-# Hardhat compilation (v2) support directory
-/cache
+# System files
+.DS_Store
+*.log
+.vscode/
+.idea/
 
-# Typechain output
-/types
-
-# Hardhat coverage reports
-/coverage
+# Documentation (internal)
+docs/
