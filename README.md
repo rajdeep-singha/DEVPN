@@ -127,6 +127,11 @@
       <td><code>0xBB2C060D38a148D9bE5a207f6a247268953ACA37</code></td>
       <td>Handles session payments with atomic settlement</td>
     </tr>
+    <tr>
+      <td><strong>StateConnector</strong></td>
+      <td><code>0x670f5D1474F8C861F318D38BBeF75077510c5281</code></td>
+      <td>Handles  HeartBeat Validation ,Uptime Calculation , Attestation Mgmt</td>
+    </tr>
   </tbody>
 </table>
 
