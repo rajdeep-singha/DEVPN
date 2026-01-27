@@ -176,7 +176,7 @@ cd DEVPN</code></pre>
     <pre><code># Install contract dependencies
 npm install
 
-# Install app dependencies
+ <p><strong>Install app dependencies</strong></p>
 cd app
 npm install</code></pre>
   </li>
