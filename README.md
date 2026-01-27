@@ -12,7 +12,7 @@
 
 <hr>
 
-<h2>📑 Table of Contents</h2>
+<h2> Table of Contents</h2>
 
 <ul>
   <li><a href="#introduction">Introduction</a></li>
@@ -30,7 +30,7 @@
 
 <hr>
 
-<h2 id="introduction">🚀 Introduction</h2>
+<h2 id="introduction"> Introduction</h2>
 
 <p>
   DeVPN is a <strong>decentralized VPN protocol</strong> that enables peer-to-peer VPN connections using smart contracts for payments and node discovery. Unlike traditional VPN services that require subscriptions and centralized infrastructure, DeVPN allows users to connect directly to node operators in a <strong>trustless, pay-per-use model</strong>.
@@ -46,22 +46,22 @@
 
 <hr>
 
-<h2 id="key-features">✨ Key Features</h2>
+<h2 id="key-features"> Key Features</h2>
 
 <ul>
-  <li><strong>🔒 Decentralized</strong>: No central authority controls the network - users connect directly to node operators</li>
-  <li><strong>💰 Pay-per-Use</strong>: Only pay for bandwidth consumed, with automatic refunds for unused deposits</li>
-  <li><strong>⚡ Instant Settlement</strong>: Single-transaction session settlement eliminates delays and complexity</li>
-  <li><strong>🌍 Global Network</strong>: Browse and connect to nodes worldwide based on location and pricing</li>
-  <li><strong>📊 Reputation System</strong>: Node operators maintain uptime scores and reputation metrics</li>
-  <li><strong>💱 Real-time Pricing</strong>: FLR/USD price feeds via Flare FTSO ensure fair, market-based pricing</li>
-  <li><strong>🔐 WireGuard Integration</strong>: Industry-standard VPN protocol for secure, high-performance connections</li>
-  <li><strong>🖥️ Cross-Platform Desktop App</strong>: Native desktop application built with Tauri (Rust + React)</li>
+  <li><strong> Decentralized</strong>: No central authority controls the network - users connect directly to node operators</li>
+  <li><strong> Pay-per-Use</strong>: Only pay for bandwidth consumed, with automatic refunds for unused deposits</li>
+  <li><strong> Instant Settlement</strong>: Single-transaction session settlement eliminates delays and complexity</li>
+  <li><strong> Global Network</strong>: Browse and connect to nodes worldwide based on location and pricing</li>
+  <li><strong> Reputation System</strong>: Node operators maintain uptime scores and reputation metrics</li>
+  <li><strong> Real-time Pricing</strong>: FLR/USD price feeds via Flare FTSO ensure fair, market-based pricing</li>
+  <li><strong> WireGuard Integration</strong>: Industry-standard VPN protocol for secure, high-performance connections</li>
+  <li><strong> Cross-Platform Desktop App</strong>: Native desktop application built with Tauri (Rust + React)</li>
 </ul>
 
 <hr>
 
-<h2 id="architecture">🏗️ Architecture</h2>
+<h2 id="architecture"> Architecture</h2>
 
 <h3>Smart Contracts</h3>
 
@@ -102,7 +102,7 @@
 
 <hr>
 
-<h2 id="deployed-contracts">📋 Deployed Contracts</h2>
+<h2 id="deployed-contracts"> Deployed Contracts</h2>
 
 <h3>Coston2 Testnet Deployment</h3>
 
@@ -331,7 +331,7 @@ npm run tauri dev</code></pre>
 
 <hr>
 
-<h2 id="network-information">🌐 Network Information</h2>
+<h2 id="network-information"> Network Information</h2>
 
 <h3>Coston2 Testnet</h3>
 
@@ -415,12 +415,12 @@ npm run tauri build</code></pre>
 
 <hr>
 
-<h2 id="security">🔒 Security</h2>
+<h2 id="security"> Security</h2>
 
 <h3>Current Status</h3>
 
 <p>
-  <strong style="color: #FF9800;">⚠️ This is experimental software deployed on testnet only. Use at your own risk.</strong>
+  <strong style="color: #FF9800;"> This is experimental software deployed on testnet only. Use at your own risk.</strong>
 </p>
 
 <h3>Security Considerations</h3>
