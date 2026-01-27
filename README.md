@@ -5,6 +5,7 @@
 </p>
 
 <hr>
+<img width="1594" height="1196" alt="image" src="https://github.com/user-attachments/assets/39899fee-6928-406b-8a96-40cf5cb47e42" />
 
 <p>
   <strong>DeVPN</strong> is built for users and organizations that need <strong>secure, private, and censorship-resistant internet access</strong> without relying on centralized VPN providers. By leveraging blockchain technology and peer-to-peer networking, DeVPN creates a <strong>trustless, decentralized VPN marketplace</strong> where users pay only for bandwidth consumed and node operators earn rewards for providing reliable service.
