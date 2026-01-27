@@ -214,7 +214,7 @@ npm run tauri dev</code></pre>
 
 <hr>
 
-<h2 id="user-guide">👤 User Guide</h2>
+<h2 id="user-guide"> User Guide</h2>
 
 <h3>Getting Started as a User</h3>
 
@@ -464,13 +464,13 @@ npm run tauri build</code></pre>
 
 <hr>
 
-<h2>🤝 Contributing</h2>
+<h2> Contributing</h2>
 
 <p>Contributions are welcome! Please feel free to submit a Pull Request.</p>
 
 <hr>
 
-<h2>💬 Support</h2>
+<h2> Support</h2>
 
 <p>For issues, questions, or contributions:</p>
 <ul>
