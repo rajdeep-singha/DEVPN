@@ -63,6 +63,7 @@
 <hr>
 
 <h2 id="architecture"> Architecture</h2>
+<img width="1280" height="851" alt="image" src="https://github.com/user-attachments/assets/3bc0ba3b-59f8-4c90-bfea-e0c7e47d8196" />
 
 <h3>Smart Contracts</h3>
 
